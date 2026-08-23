@@ -1,0 +1,9 @@
+{
+  "name": "portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Personal portfolio — acting, dance, modelling, presenting & podcast hosting.",
+  "scripts": {
+    "serve": "npx --yes serve ."
+  }
+}
