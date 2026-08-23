@@ -75,8 +75,8 @@
   }
 
   /* quick-nav: jump to a Portfolio category. From index.html (hero) this is a
-     cross-page link to portfolio.html; from portfolio.html itself it's a
-     same-page anchor. */
+     cross-page link to portfolio.html; from portfolio.html itself it switches
+     which single group is shown — the others stay hidden, no bleed-through. */
   const QUICKNAV_LINKS = [
     { label: "Acting", group: "adm" },
     { label: "Content Presenter", group: "presenter" },
@@ -88,8 +88,19 @@
       const a = document.createElement("a");
       a.href = (samePage ? "" : "portfolio.html") + `#group-${link.group}`;
       a.textContent = link.label;
+      a.dataset.group = link.group;
+      if (samePage) {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          setActiveGroup(link.group, { scroll: true });
+        });
+      }
       container.appendChild(a);
     });
+    const hint = document.createElement("p");
+    hint.className = "quicknav__hint";
+    hint.textContent = "Click a category above to view its work";
+    container.insertAdjacentElement("afterend", hint);
   }
   renderQuickNav($("heroQuickNav"), { samePage: false });
   renderQuickNav($("portfolioNav"), { samePage: true });
@@ -177,14 +188,25 @@
       cardsWrap.appendChild(groupEl);
     });
   }
+  function setActiveGroup(groupId, { scroll } = {}) {
+    GROUP_ORDER.forEach((id) => {
+      const el = $(`group-${id}`);
+      if (el) el.classList.toggle("is-active", id === groupId);
+    });
+    document.querySelectorAll("#portfolioNav a").forEach((a) => {
+      a.classList.toggle("is-active", a.dataset.group === groupId);
+    });
+    if (history.replaceState) history.replaceState(null, "", `#group-${groupId}`);
+    if (scroll) {
+      const nav = $("nav");
+      window.scrollTo({ top: (cardsWrap.getBoundingClientRect().top + window.scrollY) - (nav ? nav.offsetHeight + 24 : 0), behavior: "smooth" });
+    }
+  }
+
   if (cardsWrap) {
     renderPortfolioGroups();
-    // groups are rendered async (after the Sheet fetch), so the browser's own
-    // scroll-to-hash-on-load already happened and missed the target — do it manually
-    if (window.location.hash) {
-      const target = document.querySelector(window.location.hash);
-      if (target) target.scrollIntoView();
-    }
+    const hashGroup = window.location.hash.replace("#group-", "");
+    setActiveGroup(GROUP_ORDER.includes(hashGroup) ? hashGroup : GROUP_ORDER[0]);
   }
 
   /* ---------- gallery: combined dump — newest gallery uploads first, then tagged event photos (index.html only) ---------- */

@@ -163,11 +163,32 @@ window.loadSiteData = (function () {
       });
   }
 
-  /* ---------------- gallery ---------------- */
-  function buildGallery(rows) {
-    return rows
-      .filter((r) => r["Filename"])
-      .map((r) => ({ src: `photos/gallery/${r["Filename"].trim()}` }));
+  /* ---------------- gallery: read straight from the GitHub repo folder ---------------- */
+  /* No Sheet involved — whatever image files are in photos/gallery/ on GitHub
+     show up automatically. Sorted by filename (newest-first requires naming
+     files so that sorts correctly, e.g. 2026-01-05-photo.jpg). */
+  const GALLERY_IMAGE_RE = /\.(jpe?g|png|gif|webp|avif)$/i;
+
+  async function fetchGalleryFromGitHub(repo) {
+    if (!repo) return [];
+    const url = `https://api.github.com/repos/${repo}/contents/photos/gallery`;
+    let res;
+    try {
+      res = await fetch(url, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+    } catch (err) {
+      console.warn("Gallery: couldn't reach GitHub to list photos/gallery/", err);
+      return [];
+    }
+    if (!res.ok) {
+      console.warn(`Gallery: GitHub returned HTTP ${res.status} for photos/gallery/ — check js/sheets-config.js "githubRepo" is set to "owner/repo".`);
+      return [];
+    }
+    const items = await res.json();
+    if (!Array.isArray(items)) return [];
+    return items
+      .filter((item) => item.type === "file" && GALLERY_IMAGE_RE.test(item.name))
+      .sort((a, b) => b.name.localeCompare(a.name))
+      .map((item) => ({ src: `photos/gallery/${item.name}` }));
   }
 
   /* ---------------- public entry point ---------------- */
@@ -177,24 +198,24 @@ window.loadSiteData = (function () {
 
   return async function loadSiteData() {
     const cfg = window.SHEETS_CONFIG || {};
-    // Profile and Events are required; Gallery is optional — if it isn't
-    // set up yet, the site still works with an empty gallery instead of
-    // failing entirely.
+    // Profile and Events (Google Sheets) are required; the gallery photo
+    // list comes straight from GitHub instead and just degrades to empty
+    // if unreachable, rather than failing the whole page.
     const missing = ["profile", "events"].filter((k) => !isConfigured(cfg, k));
     if (missing.length) {
       throw new Error(`js/sheets-config.js isn't fully set up yet (missing: ${missing.join(", ")}) — see GOOGLE_SHEETS_SETUP.md.`);
     }
 
-    const [profileRows, eventRows, galleryRows] = await Promise.all([
+    const [profileRows, eventRows, gallery] = await Promise.all([
       fetchTab("Profile", cfg.profile),
       fetchTab("Events", cfg.events),
-      isConfigured(cfg, "gallery") ? fetchTab("Gallery", cfg.gallery) : Promise.resolve([])
+      fetchGalleryFromGitHub(cfg.githubRepo)
     ]);
 
     return {
       profile: buildProfile(profileRows),
       events: buildEvents(eventRows),
-      gallery: buildGallery(galleryRows)
+      gallery
     };
   };
 })();
