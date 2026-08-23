@@ -1,14 +1,16 @@
 # Google Sheets Setup (one-time)
 
-Your profile info, projects, and gallery photo list now live in a Google Sheet instead of a local file. Edit the sheet → the live site picks it up automatically on next page load. No build step, no git push needed for text/data changes (photos themselves still need to be pushed to GitHub — see `ADDING_PHOTOS.md`).
+Your profile info and projects live in a Google Sheet instead of a local file. Edit the sheet → the live site picks it up automatically on next page load. No build step, no git push needed for text/data changes (photos themselves still need to be pushed to GitHub — see `ADDING_PHOTOS.md`).
+
+(The Gallery section doesn't use a Sheet at all — it reads `photos/gallery/` straight from your GitHub repo. Nothing to set up there beyond adding photos and pushing.)
 
 ## Step 1 — Create the sheet(s)
 
 Either works, pick whichever you prefer:
-- **One spreadsheet, 3 tabs** named `Profile`, `Events`, `Gallery`, or
-- **3 separate spreadsheets**, one per data type
+- **One spreadsheet, 2 tabs** named `Profile` and `Events`, or
+- **2 separate spreadsheets**, one per data type
 
-Each of the 3 needs to be published individually either way (Step 3), so there's no real difference in effort.
+Each needs to be published individually either way (Step 3), so there's no real difference in effort.
 
 ## Step 2 — Paste in the starter data
 
@@ -67,15 +69,9 @@ Column notes:
 
 Want a real Excel dropdown for Event Type? Select the column → **Data → Data validation → Dropdown** with those 6 values — Google Sheets dropdowns persist normally, no caveats.
 
-### Gallery tab
-```
-Filename
-```
-Just the header row for now — add one filename per row (files inside `photos/gallery/`) whenever you want a photo to appear in the gallery. **Top row shows first** — the site shows them in the order they appear here, so drag rows to reorder.
-
 ## Step 3 — Publish each one as CSV
 
-Do this once per sheet (repeat 3 times — once for Profile, once for Events, once for Gallery, whether they're tabs in one spreadsheet or 3 separate spreadsheets):
+Do this once per sheet (repeat for Profile and Events, whether they're tabs in one spreadsheet or 2 separate spreadsheets):
 
 1. Open that spreadsheet → **File → Share → Publish to web**
 2. In the dialog: first dropdown → pick the specific tab (not "Entire Document") if there's more than one tab, second dropdown → **Comma-separated values (.csv)** → **Publish** → confirm.
@@ -83,7 +79,7 @@ Do this once per sheet (repeat 3 times — once for Profile, once for Events, on
    `https://docs.google.com/spreadsheets/d/e/2PACX-1vT.......xyz/pub?gid=0&single=true&output=csv`
 4. From that link, note the long ID between `/d/e/` and `/pub` (that's the `publishedId`) and the `gid=` number.
 
-**If Profile/Events/Gallery are 3 tabs in one spreadsheet**, the `publishedId` will come out the same for all 3 links — only `gid` differs. **If they're 3 separate spreadsheets**, both `publishedId` and `gid` will differ each time. Either way, just paste whatever each link actually gives you — the config below has a separate slot for each.
+**If Profile/Events are 2 tabs in one spreadsheet**, the `publishedId` will come out the same for both links — only `gid` differs. **If they're 2 separate spreadsheets**, both `publishedId` and `gid` will differ. Either way, just paste whatever each link actually gives you — the config below has a separate slot for each.
 
 ## Step 4 — Fill in the config
 
@@ -92,9 +88,10 @@ Open `js/sheets-config.js` and paste in your values:
 window.SHEETS_CONFIG = {
   profile: { publishedId: "2PACX-1vT.......xyz", gid: "0" },
   events: { publishedId: "2PACX-1vT.......abc", gid: "0" },
-  gallery: { publishedId: "2PACX-1vT.......def", gid: "0" }
+  githubRepo: "your-username/your-repo-name"
 };
 ```
+`githubRepo` is only used for the Gallery section — it tells the site which GitHub repo to read `photos/gallery/` from. Set it once to match your actual repo (from its GitHub URL) and you won't need to touch it again.
 
 ## Step 5 — Push and go live
 
