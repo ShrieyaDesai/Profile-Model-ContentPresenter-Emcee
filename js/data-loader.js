@@ -100,7 +100,7 @@ window.loadSiteData = (function () {
       },
       stats,
       footerNote: map["Footer Note"] || "",
-      mainPhoto: mainPhotoFile ? `photos/${mainPhotoFile}` : null
+      mainPhoto: mainPhotoFile ? `photos/${encodeURIComponent(mainPhotoFile)}` : null
     };
   }
 
@@ -124,12 +124,12 @@ window.loadSiteData = (function () {
         const type = matchedType || rawType;
         const folder = (r["Photos Folder"] || "").trim();
         const photoFiles = (r["Photos"] || "").split(";").map((s) => s.trim()).filter(Boolean);
-        const photos = folder ? photoFiles.map((f) => `photos/events/${folder}/${f}`) : [];
+        const photos = folder ? photoFiles.map((f) => `photos/events/${folder}/${encodeURIComponent(f)}`) : [];
 
         const coverName = (r["Cover Photo"] || "").trim();
         let coverSrc = null;
         if (coverName && folder) {
-          coverSrc = `photos/events/${folder}/${coverName}`;
+          coverSrc = `photos/events/${folder}/${encodeURIComponent(coverName)}`;
           if (!photoFiles.includes(coverName)) {
             console.warn(`Event "${r["Event Name"]}" has Cover Photo "${coverName}" but it's not listed in that row's Photos column.`);
           }
@@ -188,7 +188,7 @@ window.loadSiteData = (function () {
     return items
       .filter((item) => item.type === "file" && GALLERY_IMAGE_RE.test(item.name))
       .sort((a, b) => b.name.localeCompare(a.name))
-      .map((item) => ({ src: `photos/gallery/${item.name}` }));
+      .map((item) => ({ src: `photos/gallery/${encodeURIComponent(item.name)}` }));
   }
 
   /* ---------------- public entry point ---------------- */
