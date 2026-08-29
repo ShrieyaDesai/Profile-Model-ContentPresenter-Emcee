@@ -327,43 +327,64 @@
   $("reelModalClose").addEventListener("click", closeReelModal);
   reelModal.addEventListener("click", (e) => { if (e.target === reelModal) closeReelModal(); });
 
-  /* ---------- media modal (Show More: photos + video + reels for one project) ---------- */
+  /* ---------- media modal (Show More: full-screen, sectioned Photos -> Reels -> Video for one project) ---------- */
   const mediaModal = $("mediaModal");
   const mediaModalTitle = $("mediaModalTitle");
-  const mediaModalGrid = $("mediaModalGrid");
+  const mediaModalBody = $("mediaModalBody");
+
+  function buildMediaSection(label, tiles) {
+    if (tiles.length === 0) return null;
+    const section = document.createElement("div");
+    section.className = "media-modal__section";
+    const heading = document.createElement("h4");
+    heading.className = "media-modal__section-title";
+    heading.textContent = label;
+    const grid = document.createElement("div");
+    grid.className = "media-modal__grid";
+    tiles.forEach((tile) => grid.appendChild(tile));
+    section.append(heading, grid);
+    return section;
+  }
 
   function openMediaModal(project) {
     mediaModalTitle.textContent = project.name;
-    mediaModalGrid.innerHTML = "";
+    mediaModalBody.innerHTML = "";
 
     const photoSet = project.photos.map((src, i) => ({ src, caption: `${project.name} — ${i + 1} / ${project.photos.length}` }));
 
+    const photoTiles = project.photos.map((src, i) => {
+      const tile = document.createElement("div");
+      tile.className = "media-tile";
+      tile.innerHTML = `<img src="${src}" alt="${esc(project.name)}" loading="lazy">`;
+      tile.addEventListener("click", () => { closeMediaModal(); openLightbox(photoSet, i); });
+      return tile;
+    });
+
+    const reelTiles = project.reels.map((url, i) => {
+      const tile = document.createElement("div");
+      tile.className = "media-tile media-tile--reel";
+      tile.innerHTML = `<span class="media-tile__icon"><svg width="22" height="22"><use href="#icon-instagram"/></svg>Reel ${i + 1}</span>`;
+      tile.addEventListener("click", () => { closeMediaModal(); openReelModal(url); });
+      return tile;
+    });
+
+    const videoTiles = [];
     if (project.videoId) {
       const tile = document.createElement("div");
       tile.className = "media-tile media-tile--video";
       tile.innerHTML = `<span class="media-tile__icon"><svg width="26" height="26"><use href="#icon-play"/></svg>Video</span>`;
       tile.addEventListener("click", () => { closeMediaModal(); openVideoModal(project.videoId); });
-      mediaModalGrid.appendChild(tile);
+      videoTiles.push(tile);
     }
 
-    project.reels.forEach((url, i) => {
-      const tile = document.createElement("div");
-      tile.className = "media-tile media-tile--reel";
-      tile.innerHTML = `<span class="media-tile__icon"><svg width="22" height="22"><use href="#icon-instagram"/></svg>Reel ${i + 1}</span>`;
-      tile.addEventListener("click", () => { closeMediaModal(); openReelModal(url); });
-      mediaModalGrid.appendChild(tile);
-    });
+    [
+      buildMediaSection("Photos", photoTiles),
+      buildMediaSection("Reels", reelTiles),
+      buildMediaSection("Video", videoTiles)
+    ].forEach((section) => { if (section) mediaModalBody.appendChild(section); });
 
-    project.photos.forEach((src, i) => {
-      const tile = document.createElement("div");
-      tile.className = "media-tile";
-      tile.innerHTML = `<img src="${src}" alt="${esc(project.name)}" loading="lazy">`;
-      tile.addEventListener("click", () => { closeMediaModal(); openLightbox(photoSet, i); });
-      mediaModalGrid.appendChild(tile);
-    });
-
-    if (!project.videoId && project.reels.length === 0 && project.photos.length === 0) {
-      mediaModalGrid.innerHTML = `<p class="gallery__empty" style="grid-column:1/-1;">No media added yet.</p>`;
+    if (photoTiles.length === 0 && reelTiles.length === 0 && videoTiles.length === 0) {
+      mediaModalBody.innerHTML = `<p class="gallery__empty">No media added yet.</p>`;
     }
 
     mediaModal.hidden = false;

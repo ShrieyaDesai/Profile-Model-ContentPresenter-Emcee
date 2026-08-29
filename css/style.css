@@ -409,27 +409,33 @@ a.chip:hover { border-color: var(--accent); color: var(--text); }
   box-shadow: 0 40px 100px -30px rgba(0,0,0,0.8); background: #fff;
 }
 
-/* ---------- media modal (Show More: photos + video + reels) ---------- */
+/* ---------- media modal (Show More: full-screen, Photos -> Reels -> Video) ---------- */
 .media-modal {
-  position: fixed; inset: 0; z-index: 210; background: rgba(4, 6, 11, 0.94); backdrop-filter: blur(10px);
-  display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;
+  position: fixed; inset: 0; z-index: 210; background: var(--bg);
   animation: fade-in 0.25s var(--ease);
 }
 .media-modal[hidden] { display: none; }
 .media-modal__panel {
-  width: min(92vw, 900px); max-height: 85vh; display: flex; flex-direction: column;
-  background: var(--bg-elevated); border: 1px solid var(--panel-border); border-radius: 20px;
-  overflow: hidden; box-shadow: 0 40px 100px -30px rgba(0,0,0,0.8);
+  width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg);
 }
 .media-modal__head {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: 1.4rem 1.7rem; border-bottom: 1px solid var(--panel-border);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-shrink: 0;
+  padding: 1.2rem clamp(1.25rem, 5vw, 3rem); border-bottom: 1px solid var(--panel-border);
 }
-.media-modal__head h3 { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 1.2rem; margin: 0; color: var(--text); overflow-wrap: anywhere; }
-.media-modal__head .media-modal__close { position: static; width: 40px; height: 40px; flex-shrink: 0; }
+.media-modal__head h3 { font-family: var(--font-serif); font-style: italic; font-weight: 600; font-size: 1.3rem; margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.media-modal__head .media-modal__close { position: static; width: 44px; height: 44px; flex-shrink: 0; }
+.media-modal__body {
+  flex: 1; overflow-y: auto; padding: 2rem clamp(1.25rem, 5vw, 3rem) 3rem;
+  max-width: 1180px; margin: 0 auto; width: 100%;
+}
+.media-modal__section { margin-bottom: 2.8rem; }
+.media-modal__section:last-child { margin-bottom: 0; }
+.media-modal__section-title {
+  font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 1.2rem;
+}
 .media-modal__grid {
-  padding: 1.5rem 1.7rem 1.8rem; overflow-y: auto;
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.9rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;
 }
 .media-tile {
   position: relative; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; cursor: pointer;
