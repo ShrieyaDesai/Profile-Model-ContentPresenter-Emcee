@@ -163,10 +163,10 @@
             <ul class="card__list">${p.bullets.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
             <div class="tag-pills">${p.tags.map((t) => `<span class="tag-pill">${esc(t)}</span>`).join("")}</div>
             <div class="card__actions">
-              ${mediaCount > 1 || p.reels.length > 0 ? `<button class="card__link" data-show-more="true">
-                Show More (${mediaCount})
+              <button class="card__link" data-show-more="true">
+                Show More${mediaCount > 0 ? ` (${mediaCount})` : ""}
                 <svg width="14" height="14"><use href="#icon-arrow"/></svg>
-              </button>` : ""}
+              </button>
               ${p.videoId ? `<button class="card__link" data-video-id="${esc(p.videoId)}">
                 Watch Video
                 <svg width="12" height="12"><use href="#icon-play"/></svg>
@@ -175,7 +175,7 @@
           </div>`;
 
         const openMedia = () => openMediaModal(p);
-        if (mediaCount > 0) card.querySelector(".card__cover").addEventListener("click", (e) => {
+        card.querySelector(".card__cover").addEventListener("click", (e) => {
           if (e.target.closest("[data-video-id]")) return;
           openMedia();
         });
