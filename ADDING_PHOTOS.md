@@ -11,10 +11,10 @@ Just add images to `photos/gallery/` and push. That's it — no listing needed a
 → Shown in the Gallery section, sorted by filename (Z→A). To control order, name files so that sort works the way you want (e.g. `2026-01-05-photo.jpg`, `2026-01-02-photo.jpg`).
 
 ## 3. Event/project photos
-Add images to `photos/events/<folder-name>/`, where `<folder-name>` matches that row's **Photos Folder** column in the **Events** sheet tab. Then list those filenames in that row's **Photos** column, separated by `;` — e.g. `cover.jpg;photo2.jpg`.
+Add images to `photos/events/<folder-name>/`, where `<folder-name>` matches that row's **Photos Folder** column in the **Events** sheet tab. That's it — no filenames to list anywhere, the site reads that folder's contents straight from GitHub automatically.
 → Shown in that project's "Show More" pop-up, and automatically in the Gallery section too, tagged with its Event Type.
 
-Set a thumbnail with the **Cover Photo** column (must be one of the filenames you listed in Photos). Leave blank to auto-use the first one.
+Optionally set a thumbnail with the **Cover Photo** column (the exact filename of one photo in that folder, e.g. `photo123.jpg`). Leave blank to auto-use the first one found in the folder.
 
 ## Formats
 `.jpg` `.jpeg` `.png` `.gif` `.webp` `.avif`

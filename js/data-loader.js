@@ -112,7 +112,7 @@ window.loadSiteData = (function () {
   }
 
   /* ---------------- events ---------------- */
-  function buildEvents(rows) {
+  function buildEvents(rows, folderPhotosMap) {
     return rows
       .filter((r) => r["Event Name"])
       .map((r) => {
@@ -123,15 +123,15 @@ window.loadSiteData = (function () {
         }
         const type = matchedType || rawType;
         const folder = (r["Photos Folder"] || "").trim();
-        const photoFiles = (r["Photos"] || "").split(";").map((s) => s.trim()).filter(Boolean);
-        const photos = folder ? photoFiles.map((f) => `photos/events/${folder}/${encodeURIComponent(f)}`) : [];
+        const photoFiles = folder ? (folderPhotosMap[folder] || []) : [];
+        const photos = photoFiles.map((f) => `photos/events/${folder}/${encodeURIComponent(f)}`);
 
         const coverName = (r["Cover Photo"] || "").trim();
         let coverSrc = null;
         if (coverName && folder) {
           coverSrc = `photos/events/${folder}/${encodeURIComponent(coverName)}`;
           if (!photoFiles.includes(coverName)) {
-            console.warn(`Event "${r["Event Name"]}" has Cover Photo "${coverName}" but it's not listed in that row's Photos column.`);
+            console.warn(`Event "${r["Event Name"]}" has Cover Photo "${coverName}" but no file with that name was found in photos/events/${folder}/ on GitHub.`);
           }
         } else if (photos.length) {
           coverSrc = photos[0];
@@ -163,32 +163,46 @@ window.loadSiteData = (function () {
       });
   }
 
-  /* ---------------- gallery: read straight from the GitHub repo folder ---------------- */
-  /* No Sheet involved — whatever image files are in photos/gallery/ on GitHub
-     show up automatically. Sorted by filename (newest-first requires naming
-     files so that sorts correctly, e.g. 2026-01-05-photo.jpg). */
+  /* ---------------- shared: list image filenames in a GitHub repo folder ---------------- */
+  /* Used for both the Gallery section and each event's Photos Folder — no
+     manual filename list needed, whatever's in the folder on GitHub shows up. */
   const GALLERY_IMAGE_RE = /\.(jpe?g|png|gif|webp|avif)$/i;
 
-  async function fetchGalleryFromGitHub(repo) {
+  async function listImagesFromGitHub(repo, path) {
     if (!repo) return [];
-    const url = `https://api.github.com/repos/${repo}/contents/photos/gallery`;
+    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
     let res;
     try {
       res = await fetch(url, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
     } catch (err) {
-      console.warn("Gallery: couldn't reach GitHub to list photos/gallery/", err);
+      console.warn(`Couldn't reach GitHub to list ${path}/`, err);
       return [];
     }
     if (!res.ok) {
-      console.warn(`Gallery: GitHub returned HTTP ${res.status} for photos/gallery/ — check js/sheets-config.js "githubRepo" is set to "owner/repo".`);
+      if (res.status !== 404) {
+        console.warn(`GitHub returned HTTP ${res.status} for ${path}/ — check js/sheets-config.js "githubRepo" is set to "owner/repo".`);
+      }
       return [];
     }
     const items = await res.json();
     if (!Array.isArray(items)) return [];
     return items
       .filter((item) => item.type === "file" && GALLERY_IMAGE_RE.test(item.name))
-      .sort((a, b) => b.name.localeCompare(a.name))
-      .map((item) => ({ src: `photos/gallery/${encodeURIComponent(item.name)}` }));
+      .map((item) => item.name);
+  }
+
+  async function fetchGalleryFromGitHub(repo) {
+    const names = await listImagesFromGitHub(repo, "photos/gallery");
+    return names
+      .sort((a, b) => b.localeCompare(a))
+      .map((name) => ({ src: `photos/gallery/${encodeURIComponent(name)}` }));
+  }
+
+  async function fetchEventFolderPhotos(repo, folders) {
+    const entries = await Promise.all(
+      folders.map(async (folder) => [folder, (await listImagesFromGitHub(repo, `photos/events/${folder}`)).sort((a, b) => a.localeCompare(b))])
+    );
+    return Object.fromEntries(entries);
   }
 
   /* ---------------- public entry point ---------------- */
@@ -212,9 +226,12 @@ window.loadSiteData = (function () {
       fetchGalleryFromGitHub(cfg.githubRepo)
     ]);
 
+    const folders = [...new Set(eventRows.map((r) => (r["Photos Folder"] || "").trim()).filter(Boolean))];
+    const folderPhotosMap = await fetchEventFolderPhotos(cfg.githubRepo, folders);
+
     return {
       profile: buildProfile(profileRows),
-      events: buildEvents(eventRows),
+      events: buildEvents(eventRows, folderPhotosMap),
       gallery
     };
   };
