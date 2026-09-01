@@ -165,16 +165,37 @@ window.loadSiteData = (function () {
 
   /* ---------------- shared: list every image in the repo's photos/ tree ---------------- */
   /* One request for the whole repo file tree (instead of one request per
-     folder) — GitHub's unauthenticated API allows only 60 requests/hour per
-     IP, and this site used to spend one request per event folder on every
-     page load, so a handful of reloads while testing could exhaust it and
-     make photos silently vanish. Used for both the Gallery section and each
-     event's Photos Folder — no manual filename list needed, whatever's in
-     the folder on GitHub shows up. */
+     folder) — used for both the Gallery section and each event's Photos
+     Folder, no manual filename list needed, whatever's in the folder on
+     GitHub shows up.
+     Tried in order: jsDelivr's CDN-backed package API first (no per-visitor
+     rate limit, so it doesn't go dark for people on a shared/office network),
+     falling back to GitHub's raw API (fresher, but capped at 60 unauthenticated
+     requests/hour per visitor IP — the old source of "photos silently vanish"
+     reports) if jsDelivr is unreachable or hasn't picked up the repo yet. */
   const GALLERY_IMAGE_RE = /\.(jpe?g|png|gif|webp|avif)$/i;
 
-  async function fetchRepoImagePaths(repo) {
-    if (!repo) return [];
+  async function fetchImagePathsFromJsDelivr(repo) {
+    const url = `https://data.jsdelivr.com/v1/packages/gh/${repo}@main?structure=flat`;
+    let res;
+    try {
+      res = await fetch(url, { cache: "no-store" });
+    } catch (err) {
+      console.warn("Couldn't reach jsDelivr to list repo files — falling back to GitHub's API", err);
+      return null;
+    }
+    if (!res.ok) {
+      console.warn(`jsDelivr returned HTTP ${res.status} listing the repo's file tree — falling back to GitHub's API`);
+      return null;
+    }
+    const data = await res.json();
+    if (!Array.isArray(data.files)) return null;
+    return data.files
+      .map((f) => f.name.replace(/^\//, ""))
+      .filter((path) => GALLERY_IMAGE_RE.test(path));
+  }
+
+  async function fetchImagePathsFromGitHub(repo) {
     const url = `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`;
     let res;
     try {
@@ -192,6 +213,13 @@ window.loadSiteData = (function () {
     return data.tree
       .filter((item) => item.type === "blob" && GALLERY_IMAGE_RE.test(item.path))
       .map((item) => item.path);
+  }
+
+  async function fetchRepoImagePaths(repo) {
+    if (!repo) return [];
+    const viaJsDelivr = await fetchImagePathsFromJsDelivr(repo);
+    if (viaJsDelivr) return viaJsDelivr;
+    return fetchImagePathsFromGitHub(repo);
   }
 
   function imageNamesUnder(paths, folderPath) {
