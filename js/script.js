@@ -84,6 +84,10 @@
   ];
   function renderQuickNav(container, { samePage }) {
     if (!container) return;
+    const hint = document.createElement("p");
+    hint.className = "quicknav__hint" + (samePage ? " quicknav__hint--left" : "");
+    hint.textContent = "Click a category below to view its work";
+    container.insertAdjacentElement("beforebegin", hint);
     QUICKNAV_LINKS.forEach((link) => {
       const a = document.createElement("a");
       a.href = (samePage ? "" : "portfolio.html") + `#group-${link.group}`;
@@ -97,10 +101,6 @@
       }
       container.appendChild(a);
     });
-    const hint = document.createElement("p");
-    hint.className = "quicknav__hint";
-    hint.textContent = "Click a category above to view its work";
-    container.insertAdjacentElement("afterend", hint);
   }
   renderQuickNav($("heroQuickNav"), { samePage: false });
   renderQuickNav($("portfolioNav"), { samePage: true });
