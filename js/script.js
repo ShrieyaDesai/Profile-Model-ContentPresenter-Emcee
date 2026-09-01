@@ -215,7 +215,7 @@
   const galleryEmpty = $("galleryEmpty");
   const combinedFeed = [
     ...GALLERY.map((g) => ({ src: g.src, tag: null })),
-    ...EVENTS.flatMap((ev) => ev.photos.map((src) => ({ src, tag: ev.type })))
+    ...EVENTS.flatMap((ev) => ev.photos.map((src) => ({ src, tag: ev.name })))
   ];
   const galleryPhotoSet = combinedFeed.map((g, i) => ({ src: g.src, caption: `${g.tag || "Gallery"} — ${i + 1} / ${combinedFeed.length}` }));
 
