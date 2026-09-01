@@ -163,46 +163,53 @@ window.loadSiteData = (function () {
       });
   }
 
-  /* ---------------- shared: list image filenames in a GitHub repo folder ---------------- */
-  /* Used for both the Gallery section and each event's Photos Folder — no
-     manual filename list needed, whatever's in the folder on GitHub shows up. */
+  /* ---------------- shared: list every image in the repo's photos/ tree ---------------- */
+  /* One request for the whole repo file tree (instead of one request per
+     folder) — GitHub's unauthenticated API allows only 60 requests/hour per
+     IP, and this site used to spend one request per event folder on every
+     page load, so a handful of reloads while testing could exhaust it and
+     make photos silently vanish. Used for both the Gallery section and each
+     event's Photos Folder — no manual filename list needed, whatever's in
+     the folder on GitHub shows up. */
   const GALLERY_IMAGE_RE = /\.(jpe?g|png|gif|webp|avif)$/i;
 
-  async function listImagesFromGitHub(repo, path) {
+  async function fetchRepoImagePaths(repo) {
     if (!repo) return [];
-    const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+    const url = `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`;
     let res;
     try {
       res = await fetch(url, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
     } catch (err) {
-      console.warn(`Couldn't reach GitHub to list ${path}/`, err);
+      console.warn("Couldn't reach GitHub to list repo files", err);
       return [];
     }
     if (!res.ok) {
-      if (res.status !== 404) {
-        console.warn(`GitHub returned HTTP ${res.status} for ${path}/ — check js/sheets-config.js "githubRepo" is set to "owner/repo".`);
-      }
+      console.warn(`GitHub returned HTTP ${res.status} listing the repo's file tree — check js/sheets-config.js "githubRepo" is set to "owner/repo", and that its default branch is "main".`);
       return [];
     }
-    const items = await res.json();
-    if (!Array.isArray(items)) return [];
-    return items
-      .filter((item) => item.type === "file" && GALLERY_IMAGE_RE.test(item.name))
-      .map((item) => item.name);
+    const data = await res.json();
+    if (!Array.isArray(data.tree)) return [];
+    return data.tree
+      .filter((item) => item.type === "blob" && GALLERY_IMAGE_RE.test(item.path))
+      .map((item) => item.path);
   }
 
-  async function fetchGalleryFromGitHub(repo) {
-    const names = await listImagesFromGitHub(repo, "photos/gallery");
-    return names
+  function imageNamesUnder(paths, folderPath) {
+    return paths
+      .filter((p) => p.startsWith(folderPath) && !p.slice(folderPath.length).includes("/"))
+      .map((p) => p.slice(folderPath.length));
+  }
+
+  async function fetchPhotosFromGitHub(repo, eventFolders) {
+    const paths = await fetchRepoImagePaths(repo);
+    const gallery = imageNamesUnder(paths, "photos/gallery/")
       .sort((a, b) => b.localeCompare(a))
       .map((name) => ({ src: `photos/gallery/${encodeURIComponent(name)}` }));
-  }
-
-  async function fetchEventFolderPhotos(repo, folders) {
-    const entries = await Promise.all(
-      folders.map(async (folder) => [folder, (await listImagesFromGitHub(repo, `photos/events/${folder}`)).sort((a, b) => a.localeCompare(b))])
-    );
-    return Object.fromEntries(entries);
+    const folderPhotosMap = {};
+    eventFolders.forEach((folder) => {
+      folderPhotosMap[folder] = imageNamesUnder(paths, `photos/events/${folder}/`).sort((a, b) => a.localeCompare(b));
+    });
+    return { gallery, folderPhotosMap };
   }
 
   /* ---------------- public entry point ---------------- */
@@ -220,14 +227,13 @@ window.loadSiteData = (function () {
       throw new Error(`js/sheets-config.js isn't fully set up yet (missing: ${missing.join(", ")}) — see GOOGLE_SHEETS_SETUP.md.`);
     }
 
-    const [profileRows, eventRows, gallery] = await Promise.all([
+    const [profileRows, eventRows] = await Promise.all([
       fetchTab("Profile", cfg.profile),
-      fetchTab("Events", cfg.events),
-      fetchGalleryFromGitHub(cfg.githubRepo)
+      fetchTab("Events", cfg.events)
     ]);
 
-    const folders = [...new Set(eventRows.map((r) => (r["Photos Folder"] || "").trim()).filter(Boolean))];
-    const folderPhotosMap = await fetchEventFolderPhotos(cfg.githubRepo, folders);
+    const eventFolders = [...new Set(eventRows.map((r) => (r["Photos Folder"] || "").trim()).filter(Boolean))];
+    const { gallery, folderPhotosMap } = await fetchPhotosFromGitHub(cfg.githubRepo, eventFolders);
 
     return {
       profile: buildProfile(profileRows),

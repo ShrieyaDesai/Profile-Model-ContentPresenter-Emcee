@@ -155,7 +155,6 @@
         card.innerHTML = `
           <div class="card__cover ${p.coverSrc ? "" : "is-empty"}">
             ${p.coverSrc ? `<img src="${p.coverSrc}" alt="${esc(p.name)}" loading="lazy">` : `<span>No cover photo yet</span>`}
-            ${p.videoId ? `<button class="card__play" data-video-id="${esc(p.videoId)}" aria-label="Play video"><svg width="22" height="22"><use href="#icon-play"/></svg></button>` : ""}
           </div>
           <div class="card__body">
             <p class="card__tagline">${esc(p.subtitle)}</p>
@@ -175,10 +174,7 @@
           </div>`;
 
         const openMedia = () => openMediaModal(p);
-        card.querySelector(".card__cover").addEventListener("click", (e) => {
-          if (e.target.closest("[data-video-id]")) return;
-          openMedia();
-        });
+        card.querySelector(".card__cover").addEventListener("click", openMedia);
         const showMoreBtn = card.querySelector("[data-show-more]");
         if (showMoreBtn) showMoreBtn.addEventListener("click", openMedia);
 
