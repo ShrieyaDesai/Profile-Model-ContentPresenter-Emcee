@@ -1,0 +1,43 @@
+name: Compress photos
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "photos/**"
+
+permissions:
+  contents: write
+
+jobs:
+  compress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Pillow
+        run: pip install Pillow
+
+      - name: Compress newly added/changed photos
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: python .github/scripts/compress_photos.py
+
+      - name: Commit compressed photos
+        run: |
+          git config user.name "photo-compress-bot"
+          git config user.email "actions@github.com"
+          git add photos
+          if git diff --cached --quiet; then
+            echo "Nothing to compress."
+          else
+            git commit -m "Auto-compress uploaded photos [skip ci]"
+            git push
+          fi
