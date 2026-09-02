@@ -458,6 +458,16 @@
         fabMain.setAttribute("aria-expanded", "false");
       }
     });
+
+    // Hide the fixed button while the footer is on screen so it doesn't sit
+    // over the back-to-top arrow / copyright line.
+    const footerEl = document.querySelector(".footer");
+    if (footerEl && "IntersectionObserver" in window) {
+      new IntersectionObserver(
+        ([entry]) => fab.classList.toggle("is-near-footer", entry.isIntersecting),
+        { rootMargin: "0px 0px -10px 0px" }
+      ).observe(footerEl);
+    }
   }
 
   /* ---------- nav behaviour ---------- */

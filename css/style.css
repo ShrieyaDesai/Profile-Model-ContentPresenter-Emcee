@@ -520,6 +520,10 @@ a.chip:hover { border-color: var(--accent); color: var(--text); }
 .fab-contact {
   position: fixed; right: 1.4rem; bottom: 1.4rem; z-index: 150;
   display: flex; flex-direction: column; align-items: center; gap: 0.7rem;
+  transition: opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.fab-contact.is-near-footer {
+  opacity: 0; transform: translateY(12px) scale(0.9); pointer-events: none;
 }
 .fab-contact__items {
   display: flex; flex-direction: column; align-items: center; gap: 0.7rem;
