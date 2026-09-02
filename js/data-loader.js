@@ -128,13 +128,13 @@ window.loadSiteData = (function () {
 
         const coverName = (r["Cover Photo"] || "").trim();
         let coverSrc = null;
-        if (coverName && folder) {
+        if (coverName && folder && photoFiles.includes(coverName)) {
           coverSrc = `photos/events/${folder}/${encodeURIComponent(coverName)}`;
-          if (!photoFiles.includes(coverName)) {
-            console.warn(`Event "${r["Event Name"]}" has Cover Photo "${coverName}" but no file with that name was found in photos/events/${folder}/ on GitHub.`);
+        } else {
+          if (coverName && folder) {
+            console.warn(`Event "${r["Event Name"]}" has Cover Photo "${coverName}" but no file with that name was found in photos/events/${folder}/ on GitHub — using the first available photo instead.`);
           }
-        } else if (photos.length) {
-          coverSrc = photos[0];
+          if (photos.length) coverSrc = photos[0];
         }
 
         const description = (r["Description"] || "").trim();

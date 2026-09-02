@@ -368,7 +368,9 @@
     if (project.videoId) {
       const tile = document.createElement("div");
       tile.className = "media-tile media-tile--video";
-      tile.innerHTML = `<span class="media-tile__icon"><svg width="26" height="26"><use href="#icon-play"/></svg>Video</span>`;
+      tile.innerHTML = `
+        <iframe class="media-tile__preview" src="https://www.youtube-nocookie.com/embed/${project.videoId}?autoplay=1&mute=1&loop=1&playlist=${project.videoId}&controls=0&modestbranding=1&rel=0&playsinline=1" allow="autoplay; encrypted-media" tabindex="-1"></iframe>
+        <span class="media-tile__icon"><svg width="26" height="26"><use href="#icon-play"/></svg>Video</span>`;
       tile.addEventListener("click", () => { closeMediaModal(); openVideoModal(project.videoId); });
       videoTiles.push(tile);
     }
