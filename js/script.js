@@ -359,10 +359,7 @@
     const reelTiles = project.reels.map((url, i) => {
       const tile = document.createElement("div");
       tile.className = "media-tile media-tile--reel";
-      const cover = (project.reelCovers && project.reelCovers[i]) || project.coverSrc;
-      tile.innerHTML = `
-        ${cover ? `<img src="${cover}" alt="${esc(project.name)}" loading="lazy">` : ""}
-        <span class="media-tile__icon"><svg width="26" height="26"><use href="#icon-play"/></svg>Reel ${i + 1}</span>`;
+      tile.innerHTML = `<span class="media-tile__icon"><svg width="22" height="22"><use href="#icon-instagram"/></svg>Reel ${i + 1}</span>`;
       tile.addEventListener("click", () => { closeMediaModal(); openReelModal(url); });
       return tile;
     });
