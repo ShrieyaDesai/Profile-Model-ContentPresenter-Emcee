@@ -493,13 +493,13 @@
   $("toTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
   /* ---------- scroll reveal ---------- */
+  /* Replays every time: toggles "is-visible" both ways instead of a one-shot
+     add + unobserve, so scrolling an element out of view and back in re-runs
+     the entrance animation. */
   const revealObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-          revealObserver.unobserve(entry.target);
-        }
+        entry.target.classList.toggle("is-visible", entry.isIntersecting);
       });
     },
     { threshold: 0.15 }
