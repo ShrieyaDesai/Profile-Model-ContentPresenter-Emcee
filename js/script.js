@@ -426,6 +426,40 @@
 
   $("footerText").textContent = `© ${new Date().getFullYear()} ${PROFILE.name || ""}. ${PROFILE.footerNote || CONTENT.footer.fallbackText}`;
 
+  /* ---------- floating contact button (site-wide, all pages) ---------- */
+  const fabLinks = [
+    PROFILE.phone ? { name: "Call", url: `tel:${PROFILE.phone.replace(/\s+/g, "")}`, icon: "phone" } : null,
+    PROFILE.instagramUrl ? { name: "Instagram", url: PROFILE.instagramUrl, icon: "instagram", external: true } : null,
+    PROFILE.email ? { name: "Email", url: `mailto:${PROFILE.email}`, icon: "email" } : null
+  ].filter(Boolean);
+
+  if (fabLinks.length) {
+    const fab = document.createElement("div");
+    fab.className = "fab-contact";
+    const itemsHtml = fabLinks.map((l) =>
+      `<a href="${l.url}" aria-label="${esc(l.name)}"${l.external ? ' target="_blank" rel="noopener"' : ""}><svg width="19" height="19"><use href="#icon-${l.icon}"/></svg></a>`
+    ).join("");
+    fab.innerHTML = `
+      <div class="fab-contact__items">${itemsHtml}</div>
+      <button type="button" class="fab-contact__main" aria-label="Contact options" aria-expanded="false">
+        <svg class="fab-contact__icon--phone" width="24" height="24"><use href="#icon-phone"/></svg>
+        <svg class="fab-contact__icon--close" width="20" height="20"><use href="#icon-close"/></svg>
+      </button>`;
+    document.body.appendChild(fab);
+
+    const fabMain = fab.querySelector(".fab-contact__main");
+    fabMain.addEventListener("click", () => {
+      const isOpen = fab.classList.toggle("is-open");
+      fabMain.setAttribute("aria-expanded", String(isOpen));
+    });
+    document.addEventListener("click", (e) => {
+      if (fab.classList.contains("is-open") && !fab.contains(e.target)) {
+        fab.classList.remove("is-open");
+        fabMain.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
   /* ---------- nav behaviour ---------- */
   const nav = $("nav");
   const navLinks = $("navLinks");
