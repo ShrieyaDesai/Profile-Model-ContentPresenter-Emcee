@@ -143,7 +143,11 @@ window.loadSiteData = (function () {
           : [];
 
         const tags = (r["Tags"] || "").split(",").map((s) => s.trim()).filter(Boolean);
-        const videoUrl = (r["Video Link"] || "").trim();
+        const videoUrls = (r["Video Link"] || "").split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
+        const videoIds = videoUrls.map(extractYouTubeId).filter(Boolean);
+        if (videoIds.length < videoUrls.length) {
+          console.warn(`Event "${r["Event Name"]}" has a Video Link entry that isn't a recognized YouTube URL — it was skipped.`);
+        }
         const reels = (r["Reel Links"] || "").split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
 
         return {
@@ -154,8 +158,8 @@ window.loadSiteData = (function () {
           folder,
           photos,
           coverSrc,
-          videoUrl: videoUrl || null,
-          videoId: extractYouTubeId(videoUrl),
+          videoId: videoIds[0] || null,
+          videoIds,
           reels,
           bullets,
           group: GROUP_OF_TYPE[type.toLowerCase()] || null

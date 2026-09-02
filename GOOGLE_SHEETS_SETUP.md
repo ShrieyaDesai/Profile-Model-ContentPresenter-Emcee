@@ -65,6 +65,7 @@ Column notes:
 - **Photos Folder**: the folder name under `photos/events/` for this event, e.g. `tamil-video-song` → `photos/events/tamil-video-song/`. Just upload whatever image files belong to this event into that folder on GitHub — the site lists them automatically, no filenames to type anywhere.
 - **Photos**: unused now — leave it blank. (Photos are read straight from the folder above.)
 - **Cover Photo**: optional — one filename from that folder to use as the thumbnail, e.g. `photo123.jpg`. Leave blank to auto-use the first photo found in the folder (alphabetically).
+- **Video Link**: one or more YouTube URLs, separated by `;`
 - **Reel Links**: one or more Instagram Reel URLs, separated by `;`
 - **Description**: use ` | ` between sentences to show them as separate bullet points
 
