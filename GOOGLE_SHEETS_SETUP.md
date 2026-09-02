@@ -66,6 +66,7 @@ Column notes:
 - **Photos**: unused now — leave it blank. (Photos are read straight from the folder above.)
 - **Cover Photo**: optional — one filename from that folder to use as the thumbnail, e.g. `photo123.jpg`. Leave blank to auto-use the first photo found in the folder (alphabetically).
 - **Reel Links**: one or more Instagram Reel URLs, separated by `;`
+- **Reel Covers**: optional — a filename from the Photos Folder to use as each reel's thumbnail, in the same order as Reel Links, separated by `;` (e.g. `reel1-cover.jpg;reel2-cover.jpg`). Leave an entry blank to fall back to the event's Cover Photo for that reel. This column doesn't exist in the sheet yet — add it yourself if you want per-reel covers.
 - **Description**: use ` | ` between sentences to show them as separate bullet points
 
 Want a real Excel dropdown for Event Type? Select the column → **Data → Data validation → Dropdown** with those 6 values — Google Sheets dropdowns persist normally, no caveats.

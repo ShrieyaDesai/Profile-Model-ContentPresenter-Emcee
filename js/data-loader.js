@@ -146,6 +146,21 @@ window.loadSiteData = (function () {
         const videoUrl = (r["Video Link"] || "").trim();
         const reels = (r["Reel Links"] || "").split(/[;\n]/).map((s) => s.trim()).filter(Boolean);
 
+        // Optional per-reel cover, same position/order as "Reel Links" (e.g.
+        // "reel1-cover.jpg; reel2-cover.jpg"). Leave an entry blank to fall
+        // back to the event's own Cover Photo for that reel.
+        const reelCoverNames = (r["Reel Covers"] || "").split(/[;\n]/).map((s) => s.trim());
+        const reelCovers = reels.map((_, i) => {
+          const name = reelCoverNames[i];
+          if (name && folder && photoFiles.includes(name)) {
+            return `photos/events/${folder}/${encodeURIComponent(name)}`;
+          }
+          if (name && folder) {
+            console.warn(`Event "${r["Event Name"]}" has Reel Cover "${name}" but no file with that name was found in photos/events/${folder}/ on GitHub — using the event's cover photo instead.`);
+          }
+          return null;
+        });
+
         return {
           name: r["Event Name"].trim(),
           type,
@@ -157,6 +172,7 @@ window.loadSiteData = (function () {
           videoUrl: videoUrl || null,
           videoId: extractYouTubeId(videoUrl),
           reels,
+          reelCovers,
           bullets,
           group: GROUP_OF_TYPE[type.toLowerCase()] || null
         };
