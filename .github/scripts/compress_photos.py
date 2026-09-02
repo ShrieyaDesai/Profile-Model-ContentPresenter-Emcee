@@ -7,7 +7,6 @@ compression pass.
 import os
 import subprocess
 import sys
-
 from PIL import Image, ImageOps
 
 ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "photos")
@@ -15,7 +14,6 @@ MAX_EDGE = 2000
 JPEG_QUALITY = 82
 MIN_SIZE_TO_TOUCH = 400 * 1024  # skip files already under 400KB
 EXTS = {".jpg", ".jpeg", ".png"}
-
 
 def changed_files():
     """Only touch files added/modified by the push that triggered this run,
@@ -32,7 +30,6 @@ def changed_files():
     except subprocess.CalledProcessError:
         return None
     return {os.path.abspath(p) for p in out.splitlines() if p.startswith("photos/")}
-
 
 def main():
     touched = changed_files()
