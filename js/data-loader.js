@@ -168,12 +168,54 @@ window.loadSiteData = (function () {
      folder) — used for both the Gallery section and each event's Photos
      Folder, no manual filename list needed, whatever's in the folder on
      GitHub shows up.
-     Tried in order: jsDelivr's CDN-backed package API first (no per-visitor
-     rate limit, so it doesn't go dark for people on a shared/office network),
-     falling back to GitHub's raw API (fresher, but capped at 60 unauthenticated
-     requests/hour per visitor IP — the old source of "photos silently vanish"
-     reports) if jsDelivr is unreachable or hasn't picked up the repo yet. */
+     GitHub's raw API is tried first since it's always current — a CDN
+     mirror (jsDelivr) can lag behind a fresh push by hours with no way to
+     detect the staleness, which silently hid just-added event photos.
+     GitHub's unauthenticated API caps at 60 requests/hour per visitor IP,
+     so successful listings are cached in sessionStorage for a few minutes —
+     that's what actually protects against exhausting the limit (repeated
+     reloads in one browsing session), not which API answers first. jsDelivr
+     is kept as a fallback for when GitHub itself is unreachable or
+     rate-limited, and a stale cached listing is used as a last resort
+     rather than showing an empty gallery. */
   const GALLERY_IMAGE_RE = /\.(jpe?g|png|gif|webp|avif)$/i;
+  const REPO_LIST_CACHE_KEY = "repoImagePaths:v1";
+  const REPO_LIST_CACHE_TTL_MS = 10 * 60 * 1000;
+
+  function readCachedImagePaths(repo) {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(REPO_LIST_CACHE_KEY));
+      return cached && cached.repo === repo ? cached : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function writeCachedImagePaths(repo, paths) {
+    try {
+      sessionStorage.setItem(REPO_LIST_CACHE_KEY, JSON.stringify({ repo, paths, savedAt: Date.now() }));
+    } catch (err) { /* private-mode/quota errors — cache is a nice-to-have, ignore */ }
+  }
+
+  async function fetchImagePathsFromGitHub(repo) {
+    const url = `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`;
+    let res;
+    try {
+      res = await fetch(url, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+    } catch (err) {
+      console.warn("Couldn't reach GitHub to list repo files — falling back to jsDelivr", err);
+      return null;
+    }
+    if (!res.ok) {
+      console.warn(`GitHub returned HTTP ${res.status} listing the repo's file tree (likely rate-limited) — falling back to jsDelivr`);
+      return null;
+    }
+    const data = await res.json();
+    if (!Array.isArray(data.tree)) return null;
+    return data.tree
+      .filter((item) => item.type === "blob" && GALLERY_IMAGE_RE.test(item.path))
+      .map((item) => item.path);
+  }
 
   async function fetchImagePathsFromJsDelivr(repo) {
     const url = `https://data.jsdelivr.com/v1/packages/gh/${repo}@main?structure=flat`;
@@ -181,11 +223,11 @@ window.loadSiteData = (function () {
     try {
       res = await fetch(url, { cache: "no-store" });
     } catch (err) {
-      console.warn("Couldn't reach jsDelivr to list repo files — falling back to GitHub's API", err);
+      console.warn("Couldn't reach jsDelivr either — giving up on the repo file listing", err);
       return null;
     }
     if (!res.ok) {
-      console.warn(`jsDelivr returned HTTP ${res.status} listing the repo's file tree — falling back to GitHub's API`);
+      console.warn(`jsDelivr returned HTTP ${res.status} listing the repo's file tree`);
       return null;
     }
     const data = await res.json();
@@ -195,31 +237,24 @@ window.loadSiteData = (function () {
       .filter((path) => GALLERY_IMAGE_RE.test(path));
   }
 
-  async function fetchImagePathsFromGitHub(repo) {
-    const url = `https://api.github.com/repos/${repo}/git/trees/main?recursive=1`;
-    let res;
-    try {
-      res = await fetch(url, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
-    } catch (err) {
-      console.warn("Couldn't reach GitHub to list repo files", err);
-      return [];
-    }
-    if (!res.ok) {
-      console.warn(`GitHub returned HTTP ${res.status} listing the repo's file tree — check js/sheets-config.js "githubRepo" is set to "owner/repo", and that its default branch is "main".`);
-      return [];
-    }
-    const data = await res.json();
-    if (!Array.isArray(data.tree)) return [];
-    return data.tree
-      .filter((item) => item.type === "blob" && GALLERY_IMAGE_RE.test(item.path))
-      .map((item) => item.path);
-  }
-
   async function fetchRepoImagePaths(repo) {
     if (!repo) return [];
+
+    const cached = readCachedImagePaths(repo);
+    if (cached && Date.now() - cached.savedAt < REPO_LIST_CACHE_TTL_MS) {
+      return cached.paths;
+    }
+
+    const viaGitHub = await fetchImagePathsFromGitHub(repo);
+    if (viaGitHub) {
+      writeCachedImagePaths(repo, viaGitHub);
+      return viaGitHub;
+    }
+
     const viaJsDelivr = await fetchImagePathsFromJsDelivr(repo);
     if (viaJsDelivr) return viaJsDelivr;
-    return fetchImagePathsFromGitHub(repo);
+
+    return cached ? cached.paths : [];
   }
 
   function imageNamesUnder(paths, folderPath) {
