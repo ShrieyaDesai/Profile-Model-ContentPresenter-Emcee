@@ -33,45 +33,15 @@
     (CONTENT.meta.faviconEmoji || "✨") + "</text></svg>";
   document.head.appendChild(favicon);
 
-  /* ---------- hero (index.html only) ---------- */
+  /* ---------- hero (index.html only) — just name + tagline ---------- */
   if ($("heroName")) {
     $("heroName").textContent = PROFILE.name || "Your Name";
     $("heroKicker").textContent = PROFILE.hero?.kicker || "";
-    const heroTitleEl = $("heroTitle");
-    const heroLead = document.createElement("span");
-    heroLead.textContent = (PROFILE.hero?.titleLead || "") + " ";
-    const heroAccent = document.createElement("em");
-    heroAccent.textContent = PROFILE.hero?.titleAccent || "";
-    heroTitleEl.append(heroLead, heroAccent);
-    $("heroSubtitle").textContent = PROFILE.hero?.subtitle || "";
-    $("heroDesc").textContent = PROFILE.hero?.description || "";
+  }
 
-    const badgesWrap = $("heroBadges");
-    (PROFILE.stats || []).forEach((s) => {
-      const el = document.createElement("span");
-      el.className = "badge";
-      el.textContent = s.value ? `${s.value} ${s.label}` : s.label;
-      badgesWrap.appendChild(el);
-    });
-
-    const quickFacts = [
-      PROFILE.location ? { text: PROFILE.location } : null,
-      PROFILE.age ? { text: PROFILE.age } : null,
-      PROFILE.instagramHandle ? { text: PROFILE.instagramHandle, url: PROFILE.instagramUrl } : null,
-      PROFILE.email ? { text: PROFILE.email, url: `mailto:${PROFILE.email}` } : null
-    ].filter(Boolean);
-
-    const factsWrap = $("heroFacts");
-    quickFacts.forEach((f) => {
-      const el = document.createElement(f.url ? "a" : "span");
-      el.className = "chip";
-      el.textContent = f.text;
-      if (f.url) {
-        el.href = f.url;
-        if (f.url.startsWith("http")) { el.target = "_blank"; el.rel = "noopener"; }
-      }
-      factsWrap.appendChild(el);
-    });
+  /* ---------- full-screen photo (index.html only) ---------- */
+  if ($("photoHeroImg") && PROFILE.mainPhoto) {
+    $("photoHeroImg").src = PROFILE.mainPhoto;
   }
 
   /* quick-nav: jump to a Portfolio category. From index.html (hero) this is a
@@ -102,7 +72,6 @@
       container.appendChild(a);
     });
   }
-  renderQuickNav($("heroQuickNav"), { samePage: false });
   renderQuickNav($("portfolioNav"), { samePage: true });
   renderQuickNav($("portfolioPreviewNav"), { samePage: false });
 
@@ -110,20 +79,17 @@
   if ($("aboutHeading")) {
   $("aboutKicker").textContent = CONTENT.about.kicker;
   $("aboutHeading").textContent = CONTENT.about.heading;
-  if (PROFILE.mainPhoto) {
-    $("aboutPhoto").src = PROFILE.mainPhoto;
-    $("aboutFrame").classList.remove("is-empty");
-  }
+  // not sheet-driven — just a fixed file at photos/aboutme.jpg; falls back to
+  // its placeholder state until that's added.
+  const aboutPhoto = $("aboutPhoto");
+  aboutPhoto.addEventListener("load", () => $("aboutFrame").classList.remove("is-empty"));
+  aboutPhoto.src = "photos/aboutme.jpg";
   const aboutText = $("aboutParagraphs");
   (PROFILE.about?.paragraphs || []).forEach((p) => {
     const el = document.createElement("p");
     el.textContent = p;
     aboutText.appendChild(el);
   });
-  // second about photo isn't sheet-driven — just drop a file at photos/about-me.jpg;
-  // until then this quietly stays in its placeholder state.
-  const aboutPhoto2 = $("aboutPhoto2");
-  aboutPhoto2.addEventListener("load", () => $("aboutFrame2").classList.remove("is-empty"));
   }
 
   /* ---------- portfolio preview (index.html only) ---------- */

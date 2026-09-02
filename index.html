@@ -63,42 +63,33 @@
 
 <main id="top">
 
-  <!-- HERO -->
-  <section class="hero" id="hero">
+  <!-- HERO: name + tagline only -->
+  <section class="hero hero--simple" id="hero">
     <div class="hero__content reveal">
       <h1 class="hero__name" id="heroName"></h1>
       <p class="kicker kicker--center" id="heroKicker"></p>
-      <h2 class="hero__title" id="heroTitle"></h2>
-      <p class="hero__subtitle" id="heroSubtitle"></p>
-      <p class="hero__desc" id="heroDesc"></p>
-      <div class="hero__badges" id="heroBadges"></div>
-      <div class="hero__facts" id="heroFacts"></div>
-      <div class="quicknav reveal" id="heroQuickNav"></div>
     </div>
+  </section>
+
+  <!-- FULL-SCREEN PHOTO -->
+  <section class="photo-hero reveal reveal--scale" id="photoHero">
+    <img id="photoHeroImg" alt="Shrieya Desai">
   </section>
 
   <!-- ABOUT -->
   <section class="section" id="about">
-    <div class="section__head reveal">
-      <p class="kicker" id="aboutKicker"></p>
-      <h2 class="section__title" id="aboutHeading"></h2>
-    </div>
     <div class="about__grid">
-      <div class="about__photos">
-        <div class="about__frame reveal">
-          <div class="about__frame-inner is-empty" id="aboutFrame">
-            <img id="aboutPhoto" alt="Profile photo">
-            <div class="about__frame-placeholder">Add a photo named <code>main.jpg</code> (or .png/.webp) directly inside <code>photos/</code></div>
-          </div>
-        </div>
-        <div class="about__frame about__frame--secondary reveal reveal--delay-2">
-          <div class="about__frame-inner is-empty" id="aboutFrame2">
-            <img id="aboutPhoto2" src="photos/about-me.jpg" alt="Behind the scenes photo">
-            <div class="about__frame-placeholder about__frame-placeholder--compact">Add photos/about-me.jpg</div>
-          </div>
+      <div class="about__frame reveal reveal--left">
+        <div class="about__frame-inner is-empty" id="aboutFrame">
+          <img id="aboutPhoto" alt="Profile photo">
+          <div class="about__frame-placeholder">Add a photo named <code>aboutme.jpg</code> directly inside <code>photos/</code></div>
         </div>
       </div>
-      <div class="about__text reveal reveal--delay-1" id="aboutParagraphs"></div>
+      <div class="about__text reveal reveal--right">
+        <p class="kicker" id="aboutKicker"></p>
+        <h2 class="section__title" id="aboutHeading"></h2>
+        <div id="aboutParagraphs"></div>
+      </div>
     </div>
   </section>
 
