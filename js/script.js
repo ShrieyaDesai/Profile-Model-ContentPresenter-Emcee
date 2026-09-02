@@ -92,13 +92,6 @@
   });
   }
 
-  /* ---------- portfolio preview (index.html only) ---------- */
-  if ($("portfolioPreviewHeading")) {
-    $("portfolioPreviewKicker").textContent = CONTENT.portfolioPreview.kicker;
-    $("portfolioPreviewHeading").textContent = CONTENT.portfolioPreview.heading;
-    $("portfolioPreviewDesc").textContent = CONTENT.portfolioPreview.description;
-  }
-
   /* ---------- portfolio groups (built from the Events sheet tab, portfolio.html only) ---------- */
   const GROUP_ORDER = ["adm", "presenter", "hosting"];
   const cardsWrap = $("disciplineCards");

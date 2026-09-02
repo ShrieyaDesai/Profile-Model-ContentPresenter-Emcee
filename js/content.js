@@ -12,12 +12,6 @@ window.SITE_CONTENT = {
 
   about: { heading: "About Me", kicker: "Who I Am" },
 
-  portfolioPreview: {
-    heading: "The Work",
-    kicker: "Portfolio",
-    description: "Acting & modelling, brand presenting, live hosting — browse by category."
-  },
-
   groups: {
     adm: { icon: "🎭", title: "Acting, Dance & Modelling", intro: "Screen performances, choreographed features, and editorial & commercial modelling work." },
     presenter: { icon: "🎤", title: "Content Presenter", intro: "Presenting scripts, brand mentions, and event narratives with clarity, impact, and professionalism." },
