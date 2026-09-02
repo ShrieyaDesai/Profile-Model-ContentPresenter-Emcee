@@ -104,6 +104,7 @@
   }
   renderQuickNav($("heroQuickNav"), { samePage: false });
   renderQuickNav($("portfolioNav"), { samePage: true });
+  renderQuickNav($("portfolioPreviewNav"), { samePage: false });
 
   /* ---------- about (index.html only) ---------- */
   if ($("aboutHeading")) {
@@ -119,6 +120,17 @@
     el.textContent = p;
     aboutText.appendChild(el);
   });
+  // second about photo isn't sheet-driven — just drop a file at photos/about-me.jpg;
+  // until then this quietly stays in its placeholder state.
+  const aboutPhoto2 = $("aboutPhoto2");
+  aboutPhoto2.addEventListener("load", () => $("aboutFrame2").classList.remove("is-empty"));
+  }
+
+  /* ---------- portfolio preview (index.html only) ---------- */
+  if ($("portfolioPreviewHeading")) {
+    $("portfolioPreviewKicker").textContent = CONTENT.portfolioPreview.kicker;
+    $("portfolioPreviewHeading").textContent = CONTENT.portfolioPreview.heading;
+    $("portfolioPreviewDesc").textContent = CONTENT.portfolioPreview.description;
   }
 
   /* ---------- portfolio groups (built from the Events sheet tab, portfolio.html only) ---------- */
@@ -148,10 +160,11 @@
       if (projects.length === 0) {
         projectsWrap.innerHTML = `<p class="group__empty">No projects added yet — add a row to the Events sheet tab with Event Type "${meta.title.split(" ")[0]}".</p>`;
       }
-      projects.forEach((p) => {
+      projects.forEach((p, i) => {
         const mediaCount = p.photos.length + p.reels.length;
         const card = document.createElement("article");
         card.className = "card reveal";
+        card.style.transitionDelay = `${(i % 4) * 0.1}s`;
         card.innerHTML = `
           <div class="card__cover ${p.coverSrc ? "" : "is-empty"}">
             ${p.coverSrc ? `<img src="${p.coverSrc}" alt="${esc(p.name)}" loading="lazy">` : `<span>No cover photo yet</span>`}
@@ -223,7 +236,8 @@
   galleryEmpty.textContent = "No photos yet — drop images into photos/gallery/, or add photos to an event, and re-run the build script.";
   combinedFeed.forEach((g, i) => {
     const item = document.createElement("div");
-    item.className = "gallery__item reveal is-visible";
+    item.className = "gallery__item reveal";
+    item.style.transitionDelay = `${(i % 6) * 0.08}s`;
     item.innerHTML = `<img src="${g.src}" alt="${esc(g.tag || "Gallery photo")}" loading="lazy">${g.tag ? `<span class="gallery__cat">${esc(g.tag)}</span>` : ""}`;
     item.addEventListener("click", () => openLightbox(galleryPhotoSet, i));
     galleryGrid.appendChild(item);

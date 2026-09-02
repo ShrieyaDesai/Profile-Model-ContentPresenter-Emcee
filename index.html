@@ -84,14 +84,32 @@
       <h2 class="section__title" id="aboutHeading"></h2>
     </div>
     <div class="about__grid">
-      <div class="about__frame reveal">
-        <div class="about__frame-inner is-empty" id="aboutFrame">
-          <img id="aboutPhoto" alt="Profile photo">
-          <div class="about__frame-placeholder">Add a photo named <code>main.jpg</code> (or .png/.webp) directly inside <code>photos/</code></div>
+      <div class="about__photos">
+        <div class="about__frame reveal">
+          <div class="about__frame-inner is-empty" id="aboutFrame">
+            <img id="aboutPhoto" alt="Profile photo">
+            <div class="about__frame-placeholder">Add a photo named <code>main.jpg</code> (or .png/.webp) directly inside <code>photos/</code></div>
+          </div>
+        </div>
+        <div class="about__frame about__frame--secondary reveal reveal--delay-2">
+          <div class="about__frame-inner is-empty" id="aboutFrame2">
+            <img id="aboutPhoto2" src="photos/about-me.jpg" alt="Behind the scenes photo">
+            <div class="about__frame-placeholder about__frame-placeholder--compact">Add photos/about-me.jpg</div>
+          </div>
         </div>
       </div>
-      <div class="about__text reveal" id="aboutParagraphs"></div>
+      <div class="about__text reveal reveal--delay-1" id="aboutParagraphs"></div>
     </div>
+  </section>
+
+  <!-- PORTFOLIO PREVIEW -->
+  <section class="section section--compact" id="portfolioPreview">
+    <div class="section__head reveal">
+      <p class="kicker" id="portfolioPreviewKicker"></p>
+      <h2 class="section__title" id="portfolioPreviewHeading"></h2>
+      <p class="section__desc" id="portfolioPreviewDesc"></p>
+    </div>
+    <div class="quicknav reveal" id="portfolioPreviewNav"></div>
   </section>
 
   <!-- GALLERY -->
