@@ -288,6 +288,19 @@ a { color: inherit; text-decoration: none; }
 }
 .quicknav__hint--left { text-align: left; }
 
+@media (max-width: 640px) {
+  /* the 3 category pills must stay on one line with no horizontal scroll —
+     let them share the row instead of overflowing it, with fluid sizing so
+     they scale smoothly down to small phones rather than snapping */
+  .quicknav--single-line { overflow-x: visible; padding-bottom: 0; gap: clamp(0.35rem, 2vw, 0.7rem); }
+  .quicknav--single-line a {
+    flex: 1 1 0; flex-shrink: 1; min-width: 0;
+    padding: clamp(0.5rem, 2vw, 0.85rem) clamp(0.35rem, 2vw, 1rem);
+    font-size: clamp(0.56rem, 2.6vw, 0.75rem); letter-spacing: 0.02em; gap: 0.3rem;
+    white-space: normal; text-align: center; justify-content: center;
+  }
+}
+
 .badge {
   font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.04em;
   padding: 0.55rem 1.1rem; border-radius: 999px; color: var(--text);
@@ -341,10 +354,15 @@ a.chip:hover { border-color: var(--accent); color: var(--text); }
 
 @media (max-width: 640px) {
   /* keep image + text side by side on phones too, just with a smaller photo,
-     instead of stacking full-width */
-  .about__grid { grid-template-columns: 0.75fr 1.25fr; gap: 1rem; align-items: start; }
-  .about__text .section__title { font-size: clamp(1.5rem, 6vw, 1.9rem); }
-  .about__text p { font-size: 0.88rem; }
+     instead of stacking full-width — matched to the desktop grid's vertical
+     centering so the two columns line up the same way on both. The photo
+     column and type scale fluidly with viewport width (clamp) rather than
+     jumping at extra breakpoints, so it holds the same proportions from a
+     small phone up to the 640px handoff. */
+  .about__grid { grid-template-columns: clamp(88px, 30vw, 150px) 1fr; gap: clamp(0.7rem, 3vw, 1.1rem); align-items: center; }
+  .about__text .kicker { font-size: clamp(0.66rem, 2.6vw, 0.75rem); margin-bottom: 0.6rem; }
+  .about__text .section__title { font-size: clamp(1.3rem, 6vw, 1.9rem); margin-bottom: 0.75rem; }
+  .about__text p { font-size: clamp(0.78rem, 3vw, 0.88rem); line-height: 1.5; margin-bottom: 0.8rem; }
 }
 
 /* ---------- groups & project cards ---------- */
